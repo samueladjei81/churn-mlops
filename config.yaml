@@ -1,0 +1,57 @@
+# Central settings for the churn project.
+# Change values here instead of editing code.
+
+data:
+  raw_path: "data/raw/Customer Churn.csv"
+  target: churn
+  # The model's feature list lives in src/churn/data.py (FEATURES).
+  # age, frequency_of_use and frequency_of_sms are left out because the notebook
+  # found them highly correlated with other features.
+
+database:
+  path: data/churn.db                # SQLite file: customers, predictions, monitoring
+
+simulation:
+  # The dataset is one snapshot, so we replay it as if customers arrived month by month.
+  batches_dir: data/batches
+  history_fraction: 0.5              # first half = historical data the first model learns from
+  n_months: 6                        # the rest arrives as 6 monthly batches
+  drift_start_month: 4               # from this month, customer behaviour changes (injected drift)
+  random_state: 42
+
+split:
+  test_size: 0.3
+  random_state: 42
+
+training:
+  cv_folds: 5
+  scoring: average_precision         # PR-AUC: focuses on finding churners
+  # Gradient Boosting won the model comparison in the notebook (test PR-AUC 0.896)
+  param_grid:
+    model__n_estimators: [100, 200, 300]
+    model__learning_rate: [0.01, 0.05, 0.1]
+    model__max_depth: [2, 3, 4]
+    model__subsample: [0.7, 0.85, 1.0]
+
+business:
+  # Used to pick the decision threshold that makes the most money, not the default 0.5.
+  # Units are the same as the customer_value column.
+  offer_cost: 25                     # cost of one retention offer
+  save_rate: 0.3                     # share of contacted churners who stay because of the offer
+
+monitoring:
+  psi_threshold: 0.2                 # a feature has drifted if its PSI is above this
+  drift_share_threshold: 0.2         # retrain if at least this share of features drifted (2 of 10)
+  max_pr_auc_drop: 0.10              # ...or if PR-AUC falls this far below the model's test score
+  min_improvement: 0.0               # a retrained model must beat the champion by this much
+
+registry:
+  dir: models
+
+tracking:
+  enabled: true                      # logs runs to MLflow if it is installed
+  uri: "sqlite:///mlflow.db"
+  experiment: churn
+
+reports:
+  dir: reports

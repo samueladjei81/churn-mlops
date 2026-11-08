@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Data and generated files: never commit these
+data/raw/*
+!data/raw/.gitkeep
+data/batches/
+data/*.db
+models/
+reports/
+artifacts/*
+!artifacts/.gitkeep
+mlruns/
+mlflow.db
+*.joblib
+
+# OS / editors
+.DS_Store
+.vscode/
+.idea/
